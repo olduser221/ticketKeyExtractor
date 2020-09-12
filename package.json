@@ -1,0 +1,23 @@
+{
+  "name": "ticketkeyextractor",
+  "version": "1.0.0",
+  "description": "Tool to extract the AES key from Ticket.",
+  "main": "keyExtractor.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/recaptchaToken/ticketKeyExtractor.git"
+  },
+  "author": "Christopher Soscia",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/recaptchaToken/ticketKeyExtractor/issues"
+  },
+  "homepage": "https://github.com/recaptchaToken/ticketKeyExtractor#readme",
+  "dependencies": {
+    "aes-js": "^3.1.2",
+    "node-fetch": "^2.6.1"
+  }
+}
