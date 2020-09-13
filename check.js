@@ -9,7 +9,7 @@ function checkCookie(cookie) {
     const aesCbc = new aesjs.ModeOfOperation.cbc(key, aesjs.utils.hex.toBytes(cookie.substring(cookie.length - 32, cookie.length)))
     let encryptedBytes = aesjs.utils.hex.toBytes(cookie)
     let decryptedBytes = aesCbc.decrypt(encryptedBytes)
-    
+
     let valid = true
     for (var i in values) {
         if (values[i] !== decryptedBytes[i]) {

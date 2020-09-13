@@ -9,25 +9,25 @@ function createCookie() {
     let cookieArray = []
     let iv = new Uint8Array(16)
     crypto.randomFillSync(iv)
-  
+
     let aesCbc = new aesjs.ModeOfOperation.cbc(key, iv);
     let encryptedValues = aesCbc.encrypt(values);
-  
+
     for (let i in encryptedValues) {
       cookieArray.push(encryptedValues[i])
     }
-  
+
     aesCbc = new aesjs.ModeOfOperation.cbc(key, encryptedValues);
     let encryptedPad = aesCbc.encrypt(padding);
-  
+
     for (let i in encryptedPad) {
       cookieArray.push(encryptedPad[i])
     }
-  
+
     for (let i in iv) {
       cookieArray.push(iv[i])
     }
-  
+
     console.log(aesjs.utils.hex.fromBytes(cookieArray))
 }
 
