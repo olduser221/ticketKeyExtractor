@@ -12,6 +12,7 @@ const aesjs = require('aes-js');
         
     let statements = code.split('case')
 
+    // Finds the first round of the expansion array.
     async function findExpansionOne() {
         for (var i in statements) {
 
@@ -45,6 +46,7 @@ const aesjs = require('aes-js');
         }
     }
 
+    // Finds the second round of the expansion array.
     async function findExpansionTwo() {
         for (var i in statements) {
 
@@ -78,6 +80,7 @@ const aesjs = require('aes-js');
         }
     }
 
+    // Thank you ryan for this function, Takes the first two round of the expansion array and converts it back to the original key.
     function convertKeArrayToKey(expansionArray) {
         function convertFrom32(int32) {
             let out = [];
