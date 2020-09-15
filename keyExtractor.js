@@ -1,10 +1,13 @@
 const fetch = require('node-fetch');
 const aesjs = require('aes-js');
+const fs = require('fs');
 
 (async () => {
 
     const resp = await fetch('https://www.supremenewyork.com/ticket.js')
     const code = await resp.text()
+
+    // const code = fs.readFileSync("./oldTicket.js", "utf-8")
 
     const hash = require("crypto").createHash("sha256").update(code).digest("hex");
 
@@ -36,7 +39,20 @@ const aesjs = require('aes-js');
                 for (var v in array) {
                     const id = array[v].replace(/[+,-/,(,)]/g, '').replace(' ', '')
                     const matcher = new RegExp(`(?<=${id + '='})(.*?)(?=;)`, 'g')
-                    Ke[0][v] = eval(array[v].replace(id, code.match(matcher).pop()))
+                    const matches = code.match(matcher)
+                    for (var i = matches.length - 1; i >= 0; i--) {
+                        if (typeof matches[i] === 'string') {
+                            if (matches[i] !== '""') {
+                                Ke[0][v] = eval(array[v].replace(id, matches[i]))
+                                break;
+                            }
+                        } else {
+                            if (matches[i] !== 0) {
+                                Ke[0][v] = eval(array[v].replace(id, matches[i]))
+                                break;
+                            }
+                        }
+                    }
                 }
     
                 break;
@@ -70,7 +86,20 @@ const aesjs = require('aes-js');
                 for (var v in array) {
                     const id = array[v].replace(/[+,-/,(,)]/g, '').replace(' ', '')
                     const matcher = new RegExp(`(?<=${id + '='})(.*?)(?=;)`, 'g')
-                    Ke[1][v] = eval(array[v].replace(id, code.match(matcher).pop()))
+                    const matches = code.match(matcher)
+                    for (var i = matches.length - 1; i >= 0; i--) {
+                        if (typeof matches[i] === 'string') {
+                            if (matches[i] !== '""') {
+                                Ke[1][v] = eval(array[v].replace(id, matches[i]))
+                                break;
+                            }
+                        } else {
+                            if (matches[i] !== 0) {
+                                Ke[1][v] = eval(array[v].replace(id, matches[i]))
+                                break;
+                            }
+                        }
+                    }
                 }
     
                 break;
@@ -115,6 +144,7 @@ const aesjs = require('aes-js');
         }
     }
 
+    console.log(Ke)
     const key = convertKeArrayToKey(Ke)
     console.log(`\nHash: ${hash}\n\nKey: ${aesjs.utils.hex.fromBytes(key)}\nBytes: ${key}\n`)
 

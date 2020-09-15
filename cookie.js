@@ -28,7 +28,8 @@ function createCookie() {
       cookieArray.push(iv[i])
     }
 
-    console.log(aesjs.utils.hex.fromBytes(cookieArray))
+    // console.log(aesjs.utils.hex.fromBytes(cookieArray))
+    return aesjs.utils.hex.fromBytes(cookieArray)
 }
 
 for (let i = 0; i < process.argv[2]; i++) {
