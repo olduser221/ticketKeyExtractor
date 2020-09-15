@@ -144,8 +144,15 @@ const fs = require('fs');
         }
     }
 
-    console.log(Ke)
     const key = convertKeArrayToKey(Ke)
-    console.log(`\nHash: ${hash}\n\nKey: ${aesjs.utils.hex.fromBytes(key)}\nBytes: ${key}\n`)
+
+    console.log("")
+    console.log({
+        "Hash": hash,
+        "Round_Key": Ke,
+        "Bytes": key,
+        "Key": aesjs.utils.hex.fromBytes(key)
+    })
+    console.log("")
 
 })();
