@@ -1,13 +1,14 @@
 const fetch = require('node-fetch');
 const aesjs = require('aes-js');
 const fs = require('fs');
+const {exec} = require('child_process');
 
 (async () => {
 
     const resp = await fetch('https://www.supremenewyork.com/ticket.js')
-    const code = await resp.text()
+    let code = await resp.text()
 
-    // const code = fs.readFileSync("./oldTicket.js", "utf-8")
+    // let code = fs.readFileSync("./oldTicket.js", "utf-8")
 
     const hash = require("crypto").createHash("sha256").update(code).digest("hex");
 
@@ -23,7 +24,10 @@ const fs = require('fs');
         
                 let encCase = "case" + statements[i]
                 let encCaseSplit = encCase.match(/(?<=\]=)(.*?)(?=\^)/g)
+                let valueArray = encCase.match(/(?<=\:\()(.*?)(?=\^=)/g)[0].split('[')[0]
                 let array = []
+
+                code = code.replace(`case${encCase.match(/(?<=case)(.*?)(?=\:)/g)}:`, `case${encCase.match(/(?<=case)(.*?)(?=\:)/g)}:console.log(${valueArray});Deno.exit();`)
     
                 for (var x = 0; x < 4; x++) {
                     encCaseSplit[x] = encCaseSplit[x].trim()
