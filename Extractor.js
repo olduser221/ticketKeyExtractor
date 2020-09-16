@@ -1,23 +1,48 @@
-const fetch = require('node-fetch');
-const aesjs = require('aes-js');
-const fs = require('fs');
-const {exec} = require('child_process');
+const fetch = require('node-fetch')
+const aesjs = require('aes-js')
+const crypto = require('crypto')
 
-(async () => {
+module.exports = class Extractor {
 
-    const resp = await fetch('https://www.supremenewyork.com/ticket.js')
-    let code = await resp.text()
+    constructor() {
+        this.resp
+        this.code
+        this.hash
+        this.Ke = [ [], [] ]
+    }
 
-    // let code = fs.readFileSync("./oldTicket.js", "utf-8")
+    async init() {
+        this.resp = await fetch('https://www.supremenewyork.com/ticket.js')
+        this.code = await resp.text()
+        this.hash = crypto.createHash("sha256").update(code).digest("hex")
+    }
 
-    const hash = require("crypto").createHash("sha256").update(code).digest("hex");
+    convertKeArrayToKey(expansionArray) {
+        function convertFrom32(int32) {
+            let out = []
+            for (let i = 0; i < int32.length; i++) {
+                let int = int32[i]
+                out.push((256 + (int >> 24)) % 256)
+                out.push((256 + (int << 8 >> 24)) % 256)
+                out.push((256 + (int << 16 >> 24)) % 256)
+                out.push((256 + (int << 24 >> 24)) % 256)
+            }
+            return out
+        }
+    
+        let key32 = []
+        for (let i = 0; i < 2; i++) {
+            for (let j = 0; j < expansionArray[i].length; j++) {
+                key32.push(expansionArray[i][j])
+            }
+        }
+    
+        let newKey = convertFrom32(key32)
+    
+        return newKey
+    }
 
-    let Ke = [ [], [] ]
-        
-    let statements = code.split('case')
-
-    // Finds the first round of the expansion array.
-    async function findExpansionOne() {
+    async findExpansionOne() {
         for (var i in statements) {
 
             if (statements[i].includes('new Array') && statements[i].includes('^=')) {
@@ -66,8 +91,7 @@ const {exec} = require('child_process');
         }
     }
 
-    // Finds the second round of the expansion array.
-    async function findExpansionTwo() {
+    async findExpansionTwo() {
         for (var i in statements) {
 
             if (statements[i].includes(']] ^')) {
@@ -113,50 +137,25 @@ const {exec} = require('child_process');
         }
     }
 
-    // Thank you ryan for this function, Takes the first two round of the expansion array and converts it back to the original key.
-    function convertKeArrayToKey(expansionArray) {
-        function convertFrom32(int32) {
-            let out = [];
-            for (let i = 0; i < int32.length; i++) {
-                let int = int32[i];
-                out.push((256 + (int >> 24)) % 256);
-                out.push((256 + (int << 8 >> 24)) % 256);
-                out.push((256 + (int << 16 >> 24)) % 256);
-                out.push((256 + (int << 24 >> 24)) % 256);
-            }
-            return out;
-        }
-    
-        let key32 = [];
-        for (let i = 0; i < 2; i++) {
-            for (let j = 0; j < expansionArray[i].length; j++) {
-                key32.push(expansionArray[i][j]);
+    async extractKey() {
+        await init();
+        await findExpansionOne();
+        await findExpansionTwo();
+
+        for (var r in Ke) {
+            for (var c in Ke[r]) {
+                Ke[r][c] = parseInt(Ke[r][c])
             }
         }
-    
-        let newKey = convertFrom32(key32);
-    
-        return newKey;
+
+        const key = convertKeArrayToKey(Ke)
+
+        return ({
+            "hash": this.hash,
+            "roundKey": this.Ke,
+            "bytes": key,
+            "key": aesjs.utils.hex.fromBytes(key)
+        })
     }
 
-    await findExpansionOne();
-    await findExpansionTwo();
-
-    for (var r in Ke) {
-        for (var c in Ke[r]) {
-            Ke[r][c] = parseInt(Ke[r][c])
-        }
-    }
-
-    const key = convertKeArrayToKey(Ke)
-
-    console.log("")
-    console.log({
-        "Hash": hash,
-        "Round_Key": Ke,
-        "Bytes": key,
-        "Key": aesjs.utils.hex.fromBytes(key)
-    })
-    console.log("")
-
-})();
+}
