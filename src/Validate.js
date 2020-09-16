@@ -1,3 +1,5 @@
+const aesjs = require('aes-js')
+
 module.exports = class Validate {
 
     constructor(cookie) {
