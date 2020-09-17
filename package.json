@@ -19,6 +19,8 @@
   "homepage": "https://github.com/recaptchaToken/ticketKeyExtractor#readme",
   "dependencies": {
     "aes-js": "^3.1.2",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "terminal-kit": "^1.43.0",
+    "vorpal": "^1.12.0"
   }
 }

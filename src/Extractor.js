@@ -8,13 +8,15 @@ module.exports = class Extractor {
         this.resp
         this.code
         this.hash
+        this.statements
         this.Ke = [ [], [] ]
     }
 
     async init() {
         this.resp = await fetch('https://www.supremenewyork.com/ticket.js')
-        this.code = await resp.text()
-        this.hash = crypto.createHash("sha256").update(code).digest("hex")
+        this.code = await this.resp.text()
+        this.statements = this.code.split('case')
+        this.hash = crypto.createHash("sha256").update(this.code).digest("hex")
     }
 
     convertKeArrayToKey(expansionArray) {
@@ -43,16 +45,16 @@ module.exports = class Extractor {
     }
 
     async findExpansionOne() {
-        for (var i in statements) {
+        for (var i in this.statements) {
 
-            if (statements[i].includes('new Array') && statements[i].includes('^=')) {
+            if (this.statements[i].includes('new Array') && this.statements[i].includes('^=')) {
         
-                let encCase = "case" + statements[i]
+                let encCase = "case" + this.statements[i]
                 let encCaseSplit = encCase.match(/(?<=\]=)(.*?)(?=\^)/g)
                 let valueArray = encCase.match(/(?<=\:\()(.*?)(?=\^=)/g)[0].split('[')[0]
                 let array = []
 
-                code = code.replace(`case${encCase.match(/(?<=case)(.*?)(?=\:)/g)}:`, `case${encCase.match(/(?<=case)(.*?)(?=\:)/g)}:console.log(${valueArray});Deno.exit();`)
+                // this.code = this.code.replace(`case${encCase.match(/(?<=case)(.*?)(?=\:)/g)}:`, `case${encCase.match(/(?<=case)(.*?)(?=\:)/g)}:console.log(${valueArray});Deno.exit();`)
     
                 for (var x = 0; x < 4; x++) {
                     encCaseSplit[x] = encCaseSplit[x].trim()
@@ -68,16 +70,16 @@ module.exports = class Extractor {
                 for (var v in array) {
                     const id = array[v].replace(/[+,-/,(,)]/g, '').replace(' ', '')
                     const matcher = new RegExp(`(?<=${id + '='})(.*?)(?=;)`, 'g')
-                    const matches = code.match(matcher)
+                    const matches = this.code.match(matcher)
                     for (var i = matches.length - 1; i >= 0; i--) {
                         if (typeof matches[i] === 'string') {
                             if (matches[i] !== '""') {
-                                Ke[0][v] = eval(array[v].replace(id, matches[i]))
+                                this.Ke[0][v] = eval(array[v].replace(id, matches[i]))
                                 break;
                             }
                         } else {
                             if (matches[i] !== 0) {
-                                Ke[0][v] = eval(array[v].replace(id, matches[i]))
+                                this.Ke[0][v] = eval(array[v].replace(id, matches[i]))
                                 break;
                             }
                         }
@@ -92,11 +94,11 @@ module.exports = class Extractor {
     }
 
     async findExpansionTwo() {
-        for (var i in statements) {
+        for (var i in this.statements) {
 
-            if (statements[i].includes(']] ^')) {
+            if (this.statements[i].includes(']] ^')) {
         
-                let encCase = "case" + statements[i]
+                let encCase = "case" + this.statements[i]
                 let encCaseSplit = encCase.match(/(?<=\]\] \^)(.*?)(?=,)/g)
                 let array = []
                 
@@ -114,16 +116,16 @@ module.exports = class Extractor {
                 for (var v in array) {
                     const id = array[v].replace(/[+,-/,(,)]/g, '').replace(' ', '')
                     const matcher = new RegExp(`(?<=${id + '='})(.*?)(?=;)`, 'g')
-                    const matches = code.match(matcher)
+                    const matches = this.code.match(matcher)
                     for (var i = matches.length - 1; i >= 0; i--) {
                         if (typeof matches[i] === 'string') {
                             if (matches[i] !== '""') {
-                                Ke[1][v] = eval(array[v].replace(id, matches[i]))
+                                this.Ke[1][v] = eval(array[v].replace(id, matches[i]))
                                 break;
                             }
                         } else {
                             if (matches[i] !== 0) {
-                                Ke[1][v] = eval(array[v].replace(id, matches[i]))
+                                this.Ke[1][v] = eval(array[v].replace(id, matches[i]))
                                 break;
                             }
                         }
@@ -138,17 +140,17 @@ module.exports = class Extractor {
     }
 
     async extractKey() {
-        await init();
-        await findExpansionOne();
-        await findExpansionTwo();
+        await this.init();
+        await this.findExpansionOne();
+        await this.findExpansionTwo();
 
-        for (var r in Ke) {
-            for (var c in Ke[r]) {
-                Ke[r][c] = parseInt(Ke[r][c])
+        for (var r in this.Ke) {
+            for (var c in this.Ke[r]) {
+                this.Ke[r][c] = parseInt(this.Ke[r][c])
             }
         }
 
-        const key = convertKeArrayToKey(Ke)
+        const key = this.convertKeArrayToKey(this.Ke)
 
         return ({
             "hash": this.hash,
