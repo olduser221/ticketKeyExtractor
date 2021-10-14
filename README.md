@@ -15,8 +15,3 @@ npm install .
 ```bash
 npm start
 ```
-
-## Thanks
-Thank you to [Ryan](https://github.com/rpappa) and his repo [no-pooky](https://github.com/rpappa/no-pooky) for the reverse key expansion logic.
-
-Thank you n8 and [iNev](https://github.com/krpar) for answering my stupid questions.
